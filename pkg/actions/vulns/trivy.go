@@ -89,11 +89,10 @@ func (scanner *TrivyScanner) ScanImage(ctx context.Context, imageURL string, use
 		defer os.RemoveAll(outputPath)
 		defer outJson.Close()
 	}
-
 	var cmdBuf bytes.Buffer
 	err = cmdTmpl.Execute(&cmdBuf, input{
 		URL:        imageURL,
-		OutputFile: userOutPath,
+		OutputFile: outputPath,
 		Trivy:      trivyPath,
 	})
 	if err != nil {
@@ -106,7 +105,7 @@ func (scanner *TrivyScanner) ScanImage(ctx context.Context, imageURL string, use
 	}
 
 	// read stored trivy results
-	vBuf, err := os.ReadFile(userOutPath)
+	vBuf, err := os.ReadFile(outputPath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error reading Trivy output: %w", err)
 	}

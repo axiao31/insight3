@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 
 	"github.com/intel-sandbox/kube-score/pkg/actions/vulns"
 	"github.com/intel-sandbox/kube-score/pkg/clients/db"
@@ -93,6 +94,9 @@ func evalRelease(ctx context.Context, provider provider.KubeProvider, opts *comm
 	for idx, release := range rimgs {
 		vData := []vulns.VulnerabilityReport{}
 		vSummary := &reports.VulnerabilityData{}
+		re := regexp.MustCompile(`v\d+\.\d+\.\d+$`)
+		release.URL = re.ReplaceAllString(release.URL, opts.Version)
+		rimgs[idx].URL = release.URL
 		if opts.Component != "" {
 			// ThirdParty
 			vSummary, vData, err = scanner.ScanRepo(ctx, release.URL, opts.OutputFilePath)
@@ -106,6 +110,7 @@ func evalRelease(ctx context.Context, provider provider.KubeProvider, opts *comm
 			vSummary, vData, err = scanner.ScanImage(ctx, release.URL, opts.OutputFilePath)
 			if err != nil {
 				fmt.Printf("error scanning image: %s\n", release.URL)
+				fmt.Printf("error : %s\n", err)
 				continue
 			}
 		}
